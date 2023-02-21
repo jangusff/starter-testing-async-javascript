@@ -1,6 +1,6 @@
 const axios = require("axios");
 const { index } = require("../src/requests");
-const BASE_URL = "http://localhost:5000";
+const BASE_URL = "http://localhost:5001";
 
 describe("requests.js", () => {
   describe("index()", () => {
@@ -28,19 +28,39 @@ describe("requests.js", () => {
       },
     ];
 
+    beforeEach(() => {
+      jest.spyOn(axios, "get");
+    });
+
+    afterEach(() => {
+      jest.clearAllMocks();
+    });
+
     it("should make a GET request to the appropriate URL", async () => {
-      // Write code here
-      expect(1).toBe(2);
+      await index();
+
+      const expectedURL = `${BASE_URL}/constellations`;
+      expect(axios.get).toHaveBeenCalledWith(expectedURL);
     });
 
     it("should return a list of constellations with fewer than 10 stars with planets", async () => {
-      // Write code here
-      expect(1).toBe(2);
+      axios.get.mockImplementation(() => Promise.resolve({ data }));
+
+      const response = await index();
+
+      const expected = data.slice(0, 2);
+      expect(response).toEqual(expected);
     });
 
     it("should log an error to the console", async () => {
-      // Write code here
-      expect(1).toBe(2);
+      axios.get.mockImplementation(() =>
+        Promise.reject(new Error("Request failed."))
+      );
+      jest.spyOn(console, "error").mockImplementation(); // creates a mock function for console.error() so that you can spy on its behavior under test
+      
+      await index();
+
+      expect(console.error).toHaveBeenCalledWith("Request failed.");
     });
   });
 });
